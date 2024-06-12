@@ -3763,7 +3763,8 @@ NO_INLINE void jswrap_banglejs_init() {
     if (jshPinGetValue(BTN1_PININDEX) && jshPinGetValue(BTN4_PININDEX))
       recoveryMode = true;
 #else
-    if (jshPinGetValue(HOME_BTN_PININDEX))
+    // Always start in recovery mode
+    // if (jshPinGetValue(HOME_BTN_PININDEX))
       recoveryMode = true;
 #endif
   }
