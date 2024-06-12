@@ -7,7 +7,7 @@
   E.removeAllListeners();
   NRF.removeAllListeners();
   Bangle.setLCDBrightness(1);
-  let menu = {"":{title:"Recovery"},
+  let menu = {"":{title:"Recovery Default"},
     "Clean Boot": () => {
       reset();
     },
