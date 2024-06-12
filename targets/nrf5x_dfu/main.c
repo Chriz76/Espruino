@@ -139,57 +139,17 @@ bool nrf_dfu_enter_check(void) {
 bool dfu_enter_check(void) {
 #endif
   bool dfu_start;
-#ifdef BTN1_PININDEX
-  dfu_start = get_btn1_state();
-#else
   dfu_start = dfuIsColdBoot; // if no button, enter bootloader if it's a cold boot, then exit after a few seconds
-#endif
-#ifdef BUTTONPRESS_TO_REBOOT_BOOTLOADER
-    // if DFU looks invalid, go straight to bootloader
-    if (s_dfu_settings.bank_0.bank_code == NRF_DFU_BANK_INVALID) {
-      lcd_println("BANK0 INVALID");
-      if (!dfu_start) return true;
-    }
-#endif
-
+  
     // If button is held down for 3 seconds, don't start bootloader.
     // This means that we go straight to Espruino, where the button is still
     // pressed and can be used to stop execution of the sent code.
     if (dfu_start) {
-#if defined(BUTTONPRESS_TO_REBOOT_BOOTLOADER) && defined(BTN2_PININDEX)
-      lcd_print("RELEASE BTN1 FOR DFU\r\nBTN1 TO BOOT\r\nBTN1 + BTN2 TURN OFF\r\n\r\n<                   >\r");
-#else
       lcd_print("RELEASE BTN1 FOR DFU\r\nBTN1 TO BOOT\r\n\r\n<                   >\r");
-#endif
-#ifdef BTN1_PININDEX
-      int count = 20;
-#ifdef BANGLEJS_F18
-      while (get_btn1_state() && --count) {
-        // the screen update takes long enough that
-        // we don't need a delay
-        lcd_print("=");
-      }
-#else
-      count *= 128;
-      while (get_btn1_state() && count) {
-        nrf_delay_us(999);
-        set_led_state((count&3)==0, false);
-        if ((count&127)==0) lcd_print("=");
-        count--;
-      }
-#endif
-#else
       // no button, ensure we enter bootloader
       int count=1;
-#endif
       if (!count) {
         dfu_start = false;
-#if defined(BUTTONPRESS_TO_REBOOT_BOOTLOADER) && defined(BTN2_PININDEX)
-        if (jshPinGetValue(BTN2_PININDEX)) {
-          turn_off();
-          //NVIC_SystemReset(); // just in case!
-        }
-#endif
       } else {
         lcd_clear();
         print_fw_version();
@@ -205,37 +165,17 @@ bool dfu_enter_check(void) {
       nrf_delay_us(100000);
 #endif
 #endif
-#ifdef BUTTONPRESS_TO_REBOOT_BOOTLOADER
-      // turn on watchdog - bootloader should override this if it starts,
-      // but if we go straight through to run code then if the code fails to boot
-      // we'll restart.
-      NRF_WDT->CONFIG = (WDT_CONFIG_HALT_Pause << WDT_CONFIG_HALT_Pos) | ( WDT_CONFIG_SLEEP_Run << WDT_CONFIG_SLEEP_Pos);
-      NRF_WDT->CRV = (int)(5*32768); // 5 seconds
-      NRF_WDT->RREN |= WDT_RREN_RR0_Msk;  // Enable reload register 0
-      NRF_WDT->TASKS_START = 1;
-      NRF_WDT->RR[0] = 0x6E524635; // Kick...
-#endif
     }
 
     return dfu_start;
 }
 
-#if defined(BUTTONPRESS_TO_REBOOT_BOOTLOADER) || !defined(BTN1_PININDEX)
+
 #define REBOOT_TIMER
 APP_TIMER_DEF(m_reboot_timer_id);
 int rebootCounter = 0;
 
 void reboot_check_handler() {
-#ifdef BUTTONPRESS_TO_REBOOT_BOOTLOADER
-  if (get_btn1_state()) rebootCounter++;
-  else rebootCounter=0;
-  if (rebootCounter>10) {
-    NVIC_SystemReset();
-  }
-  // We enabled the watchdog, so we must kick it (as it stays set even after restart)
-  NRF_WDT->RR[0] = 0x6E524635;
-#endif
-#ifndef BTN1_PININDEX
   if (dfuIsConnected)
     rebootCounter = 0;
   else {
@@ -247,7 +187,6 @@ void reboot_check_handler() {
       NVIC_SystemReset();
     }
   }
-#endif
 #if NRF_SD_BLE_API_VERSION>=5
   // not quite sure why this doesn't repeat in SDK15 when we
   // asked it to - maybe DFU kills all timers?
@@ -256,7 +195,6 @@ void reboot_check_handler() {
         NULL);
 #endif
 }
-#endif
 
 void dfu_evt_init() {
   set_led_state(true,false);
@@ -272,9 +210,6 @@ void dfu_evt_init() {
       APP_TIMER_TICKS(100),
 #endif
       NULL); // context
-#endif
-#ifdef BUTTONPRESS_TO_REBOOT_BOOTLOADER
-  lcd_println("BTN1 = REBOOT");
 #endif
 }
 
@@ -373,30 +308,6 @@ int main(void)
       if (!get_btn1_state() && (r&0xF)==0) { // Don't turn off after a SW reset, to avoid user input needed during reflashing
         turn_off();
       } else {
-#else // DICKENS
-      if (!get_btn1_state() && get_charging_state()) {
-        nrf_delay_ms(3000); // wait 4 secs in total before booting if on charge
-      }
-      if (!get_btn1_state() && !get_charging_state() && (r&0xF)==0) { // Don't turn off after a SW reset, to avoid user input needed during reflashing
-        turn_off();
-      } else {
-        // DICKENS: Enter bootloader only if BTN2 held as well
-        if (!get_btn2_state()) {
-          // Clear reset reason flags
-          NRF_POWER->RESETREAS = 0xFFFFFFFF;
-#ifdef ESPR_BOOTLOADER_SPIFLASH
-          lcd_init();
-#ifndef DICKENS
-          print_fw_version();
-#endif
-          // Check if we should reflash new firmware
-          flashCheckAndRun();
-#endif
-          // Run the main application.
-          nrf_bootloader_app_start();
-        } else {
-        }
-#endif // DICKENS
       }
     }
 #endif
