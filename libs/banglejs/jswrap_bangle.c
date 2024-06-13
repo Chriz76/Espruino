@@ -823,7 +823,13 @@ volatile bool wasCharging;
 volatile uint16_t inactivityTimer; // in ms
 /// time since the Bangle's charge state was changed
 volatile uint16_t chargeTimer; // in ms
-/// How long has BTN1 been held down for (or TIMER_MAX is a reset has already happened)
+/// Should we reset
+bool stopKickingWatchDog = false;
+/// How often was the left side double tapped in a row
+uint16_t leftSideDoubleTapCounter = 0;
+/// time since last left side double tap
+uint16_t leftSideDoubleTapTimer = 0; // in ms
+/// How long has BTN1 been held down for (or TIMER_MAX if a reset has already happened)
 volatile uint16_t homeBtnTimer; // in ms
 /// How long has BTN1 been held down and watch hasn't reset (used to queue an interrupt)
 volatile uint16_t homeBtnInterruptTimer; // in ms
@@ -1232,7 +1238,7 @@ void peripheralPollHandler() {
 #ifdef BTN2_PININDEX
        && jshPinGetValue(BTN2_PININDEX)
 #endif
-       ))
+       ) && !stopKickingWatchDog)
     jshKickWatchDog();
 
   // power on display if a button is pressed
@@ -1437,6 +1443,29 @@ void peripheralPollHandler() {
     // double tap
     if ((bangleFlags&JSBF_WAKEON_DBLTAP) && (tapInfo&2)/*front*/ && (tapInfo&0x80)/*double-tap*/)
       wakeUpBangle("doubleTap");
+
+    // simulated button click
+    if ((tapInfo & 0x80) /*double-tap*/) {
+        if (tapInfo & 32)/*right*/
+            btnHandlerCommon(1, true, btn1EventFlags);
+        else if (tapInfo & 16)/*left*/ {
+            if (bangleTasks & JSBT_RESET) {
+                // We already wanted to reset but we didn't get back to idle loop in
+                // let's force a break out of JS execution
+                jsiConsolePrintf("Button held down - interrupting JS execution...\n");
+                execInfo.execute |= EXEC_INTERRUPTED;
+            }
+            else {
+                bangleTasks |= JSBT_RESET;
+                jshHadEvent();
+                // Allow home button to break out of debugger
+                if (jsiStatus & JSIS_IN_DEBUGGER) {
+                    jsiStatus |= JSIS_EXIT_DEBUGGER;
+                    execInfo.execute |= EXEC_INTERRUPTED;
+                }
+            }
+        }
+    }
 
     // tap ignores lock
     bangleTasks |= JSBT_ACCEL_TAPPED;
