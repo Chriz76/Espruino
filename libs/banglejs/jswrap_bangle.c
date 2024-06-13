@@ -4199,6 +4199,7 @@ NO_INLINE void jswrap_banglejs_init() {
   jshSetPinShouldStayWatched(BTN2_PININDEX,true);
   channel = jshPinWatch(BTN1_PININDEX, true, JSPW_NONE);
   if (channel!=EV_NONE) jshSetEventCallback(channel, btn1Handler);
+  btn1EventFlags = channel;
   channel = jshPinWatch(BTN2_PININDEX, true, JSPW_NONE);
   if (channel!=EV_NONE) jshSetEventCallback(channel, btn2Handler);
 #ifdef BTN3_PININDEX
