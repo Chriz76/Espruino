@@ -1446,9 +1446,10 @@ void peripheralPollHandler() {
 
     // simulated button click
     if ((tapInfo & 0x80) /*double-tap*/) {
-        if (tapInfo & 32)/*right*/
+        if (tapInfo & 32)/*right*/ {
             btnHandlerCommon(1, true, btn1EventFlags);
             btnHandlerCommon(1, false, btn1EventFlags);
+        }
         else if (tapInfo & 16)/*left*/ {
             if (bangleTasks & JSBT_RESET) {
                 // We already wanted to reset but we didn't get back to idle loop in
