@@ -1034,7 +1034,7 @@ JsBangleTasks bangleTasks;
 
 const char *lockReason = 0; ///< If JSBT_LOCK/UNLOCK is set, this is the reason (if known) - should point to a constant string (not on stack!)
 void _jswrap_banglejs_setLocked(bool isLocked, const char *reason);
-void btnHandlerCommon(int button, bool state, IOEventFlags flags);
+void btnHandlerCommon(int button, bool state, IOEventFlags flags, bool virtualClick);
 
 void jswrap_banglejs_pwrGPS(bool on) {
   if (on) bangleFlags |= JSBF_GPS_ON;
@@ -1227,7 +1227,7 @@ void peripheralPollHandler() {
     static bool lastBtn1Value = 0;
     bool btn1Value = jshPinGetValue(BTN1_PININDEX);
     if (btn1Value != lastBtn1Value) {
-      btnHandlerCommon(1, btn1Value, btn1EventFlags);
+      btnHandlerCommon(1, btn1Value, btn1EventFlags, false);
       lastBtn1Value = btn1Value;
     }
   }
@@ -1448,7 +1448,7 @@ void peripheralPollHandler() {
     if ((tapInfo & 0x80) /*double-tap*/) {
         if ((tapInfo & 16)/*right*/) {
             btnHandlerCommon(1, true, btn1EventFlags, true);
-            btnHandlerCommon(1, false, btn1EventFlags);
+            btnHandlerCommon(1, false, btn1EventFlags, false);
         }
         else if (tapInfo & 32)/*left*/ {
             if (bangleTasks & JSBT_RESET) {
@@ -1834,10 +1834,6 @@ void btnHandlerCommon(int button, bool state, IOEventFlags flags, bool virtualCl
     jshPushIOEvent(flags | (state?EV_EXTI_IS_HIGH:0), t);
 }
 
-void btnHandlerCommon(int button, bool state, IOEventFlags flags) {
-    btnHandlerCommon(button, state, flags, false);
-}
-
 #if defined(BANGLEJS_F18)
 // returns true if handled and shouldn't create a normal watch event
 bool btnTouchHandler() {
@@ -1887,30 +1883,30 @@ void btn1Handler(bool state, IOEventFlags flags) {
 #ifdef BANGLEJS_Q3
   if (!(bangleFlags&JSBF_BTN_LOW_RESISTANCE_FIX))
 #endif
-    btnHandlerCommon(1,state,flags);
+    btnHandlerCommon(1,state,flags, false);
 }
 #ifdef BTN2_PININDEX
 void btn2Handler(bool state, IOEventFlags flags) {
-  btnHandlerCommon(2,state,flags);
+  btnHandlerCommon(2,state,flags, false);
 }
 #endif
 #ifdef BTN3_PININDEX
 void btn3Handler(bool state, IOEventFlags flags) {
-  btnHandlerCommon(3,state,flags);
+  btnHandlerCommon(3,state,flags, false);
 }
 #endif
 #if defined(BANGLEJS_F18)
 void btn4Handler(bool state, IOEventFlags flags) {
   if (btnTouchHandler()) return;
-  btnHandlerCommon(4,state,flags);
+  btnHandlerCommon(4,state,flags, false);
 }
 void btn5Handler(bool state, IOEventFlags flags) {
   if (btnTouchHandler()) return;
-  btnHandlerCommon(5,state,flags);
+  btnHandlerCommon(5,state,flags, false);
 }
 #else
 void btn4Handler(bool state, IOEventFlags flags) {
-  btnHandlerCommon(4,state,flags);
+  btnHandlerCommon(4,state,flags, false);
 }
 #endif
 
