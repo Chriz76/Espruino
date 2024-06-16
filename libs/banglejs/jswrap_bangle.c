@@ -1446,11 +1446,11 @@ void peripheralPollHandler() {
 
     // simulated button click
     if ((tapInfo & 0x80) /*double-tap*/) {
-        if ((tapInfo & 32)/*right*/) {
-            btnHandlerCommon(1, true, btn1EventFlags);
+        if ((tapInfo & 16)/*right*/) {
+            btnHandlerCommon(1, true, btn1EventFlags, true);
             btnHandlerCommon(1, false, btn1EventFlags);
         }
-        else if (tapInfo & 16)/*left*/ {
+        else if (tapInfo & 32)/*left*/ {
             if (bangleTasks & JSBT_RESET) {
                 // We already wanted to reset but we didn't get back to idle loop in
                 // let's force a break out of JS execution
@@ -1780,6 +1780,10 @@ void backlightOffHandler() {
 #endif // !EMULATED
 
 void btnHandlerCommon(int button, bool state, IOEventFlags flags) {
+    btnHandlerCommon(button, state, flags);
+}
+
+void btnHandlerCommon(int button, bool state, IOEventFlags flags, bool virtualClick) {
   // wake up IF LCD power or Lock has a timeout (so will turn off automatically)
   if (lcdPowerTimeout || backlightTimeout || lockTimeout) {
     if (((bangleFlags&JSBF_WAKEON_BTN1)&&(button==1)) ||
@@ -1826,6 +1830,9 @@ void btnHandlerCommon(int button, bool state, IOEventFlags flags) {
       lcdWakeButtonTime = 0;
     }
   }
+  if (virtualClick)
+      t -= jshGetTimeFromMilliseconds(100);
+       
   // if not locked, add to the event queue for normal processing for watches
   if (pushEvent)
     jshPushIOEvent(flags | (state?EV_EXTI_IS_HIGH:0), t);
