@@ -1779,10 +1779,6 @@ void backlightOffHandler() {
 #endif // BANGLEJS_F18
 #endif // !EMULATED
 
-void btnHandlerCommon(int button, bool state, IOEventFlags flags) {
-    btnHandlerCommon(button, state, flags, false);
-}
-
 void btnHandlerCommon(int button, bool state, IOEventFlags flags, bool virtualClick) {
   // wake up IF LCD power or Lock has a timeout (so will turn off automatically)
   if (lcdPowerTimeout || backlightTimeout || lockTimeout) {
@@ -1836,6 +1832,10 @@ void btnHandlerCommon(int button, bool state, IOEventFlags flags, bool virtualCl
   // if not locked, add to the event queue for normal processing for watches
   if (pushEvent)
     jshPushIOEvent(flags | (state?EV_EXTI_IS_HIGH:0), t);
+}
+
+void btnHandlerCommon(int button, bool state, IOEventFlags flags) {
+    btnHandlerCommon(button, state, flags, false);
 }
 
 #if defined(BANGLEJS_F18)
