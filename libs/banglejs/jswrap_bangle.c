@@ -1780,7 +1780,7 @@ void backlightOffHandler() {
 #endif // !EMULATED
 
 void btnHandlerCommon(int button, bool state, IOEventFlags flags) {
-    btnHandlerCommon(button, state, flags);
+    btnHandlerCommon(button, state, flags, false);
 }
 
 void btnHandlerCommon(int button, bool state, IOEventFlags flags, bool virtualClick) {
