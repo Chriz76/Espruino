@@ -1448,7 +1448,7 @@ void peripheralPollHandler() {
     if ((tapInfo & 0x80) /*double-tap*/) {
         if ((tapInfo & 16)/*right*/) {
             btnHandlerCommon(1, true, btn1EventFlags, true);
-            btnHandlerCommon(1, false, btn1EventFlags, false);
+            btnHandlerCommon(1, false, btn1EventFlags, true);
         }
         else if (tapInfo & 32)/*left*/ {
             if (bangleTasks & JSBT_RESET) {
@@ -1780,6 +1780,7 @@ void backlightOffHandler() {
 #endif // !EMULATED
 
 void btnHandlerCommon(int button, bool state, IOEventFlags flags, bool virtualClick) {
+    jsiConsolePrintf("btnHandlerCommon\n");
   // wake up IF LCD power or Lock has a timeout (so will turn off automatically)
   if (lcdPowerTimeout || backlightTimeout || lockTimeout) {
     if (((bangleFlags&JSBF_WAKEON_BTN1)&&(button==1)) ||
@@ -1828,10 +1829,12 @@ void btnHandlerCommon(int button, bool state, IOEventFlags flags, bool virtualCl
   }
   if (virtualClick)
       t -= jshGetTimeFromMilliseconds(100);
-       
+  
   // if not locked, add to the event queue for normal processing for watches
-  if (pushEvent)
-    jshPushIOEvent(flags | (state?EV_EXTI_IS_HIGH:0), t);
+  if (pushEvent) {
+      jsiConsolePrintf("pushEvent\n");
+      jshPushIOEvent(flags | (state ? EV_EXTI_IS_HIGH : 0 | (virtualClick ? EV_EXTI_DATA_PIN_HIGH : 0)), t);
+  }
 }
 
 #if defined(BANGLEJS_F18)
