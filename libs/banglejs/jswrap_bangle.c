@@ -1470,7 +1470,7 @@ void peripheralPollHandler() {
                 }
             }
         }
-        else if (tapInfo & 4) /*top*/) {
+        else if ((tapInfo & 4) /*top*/) {
             if (topDoubleTapTimer < 10000) {
                 topDoubleTapCounter++;
                 if (topDoubleTapCounter == 3) {
