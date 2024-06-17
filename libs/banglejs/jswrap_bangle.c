@@ -826,9 +826,9 @@ volatile uint16_t chargeTimer; // in ms
 /// Should we reset
 bool stopKickingWatchDog = false;
 /// How often was the left side double tapped in a row
-uint16_t leftSideDoubleTapCounter = 0;
+uint16_t topDoubleTapCounter = 0;
 /// time since last left side double tap
-uint16_t leftSideDoubleTapTimer = 0; // in ms
+uint16_t topDoubleTapTimer = 0; // in ms
 /// How long has BTN1 been held down for (or TIMER_MAX if a reset has already happened)
 volatile uint16_t homeBtnTimer; // in ms
 /// How long has BTN1 been held down and watch hasn't reset (used to queue an interrupt)
@@ -1422,6 +1422,9 @@ void peripheralPollHandler() {
 #endif // MAG_I2C
 #ifdef ACCEL_I2C
 #ifdef ACCEL_DEVICE_KX023
+  if (topDoubleTapTimer < TIMER_MAX)
+      topDoubleTapTimer += pollInterval;
+
   // poll KX023 accelerometer (no other way as IRQ line seems disconnected!)
   // read interrupt source data
   buf[0]=0x12; // INS1
@@ -1466,6 +1469,18 @@ void peripheralPollHandler() {
                     execInfo.execute |= EXEC_INTERRUPTED;
                 }
             }
+        }
+        else if (tapInfo & 4) /*top*/) {
+            if (topDoubleTapTimer < 10000) {
+                topDoubleTapCounter++;
+                if (topDoubleTapCounter == 3) {
+                    stopKickingWatchDog = true;
+                }
+            }
+            else {
+                topDoubleTapCounter = 1;
+            }
+            topDoubleTapTimer = 0;
         }
     }
 
