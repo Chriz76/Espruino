@@ -1238,14 +1238,14 @@ void peripheralPollHandler() {
 #ifdef BTN2_PININDEX
        && jshPinGetValue(BTN2_PININDEX)
 #endif
-       ) && !stopKickingWatchDog)
+       ) /*&& !stopKickingWatchDog*/)
     jshKickWatchDog();
 
   // power on display if a button is pressed
   if (inactivityTimer < TIMER_MAX)
     inactivityTimer += pollInterval;
   // If button is held down, trigger a soft reset so we go back to the clock
-  if (jshPinGetValue(HOME_BTN_PININDEX)) {
+  if (jshPinGetValue(HOME_BTN_PININDEX) && !stopKickingWatchDog) {
     if (homeBtnTimer < TIMER_MAX) {
       homeBtnTimer += pollInterval;
       if (btnLoadTimeout && (homeBtnTimer >= btnLoadTimeout)) {
@@ -1448,7 +1448,7 @@ void peripheralPollHandler() {
       wakeUpBangle("doubleTap");
 
     // simulated button click
-    if ((tapInfo & 0x80) /*double-tap*/) {
+    if (!stopKickingWatchDog && (tapInfo & 0x80) /*double-tap*/) {
         if ((tapInfo & 16)/*right*/) {
             btnHandlerCommon(1, true, btn1EventFlags, true);
             btnHandlerCommon(1, false, btn1EventFlags, true);
