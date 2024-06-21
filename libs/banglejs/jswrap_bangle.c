@@ -825,6 +825,8 @@ volatile uint16_t inactivityTimer; // in ms
 volatile uint16_t chargeTimer; // in ms
 /// Should we reset
 bool stopKickingWatchDog = false;
+bool nextChargeWillReboot = false;
+bool hardLock = false;
 /// How often was the left side double tapped in a row
 uint16_t topDoubleTapCounter = 0;
 /// time since last left side double tap
@@ -1238,14 +1240,14 @@ void peripheralPollHandler() {
 #ifdef BTN2_PININDEX
        && jshPinGetValue(BTN2_PININDEX)
 #endif
-       ) /*&& !stopKickingWatchDog*/)
+       ) && !stopKickingWatchDog)
     jshKickWatchDog();
 
   // power on display if a button is pressed
   if (inactivityTimer < TIMER_MAX)
     inactivityTimer += pollInterval;
   // If button is held down, trigger a soft reset so we go back to the clock
-  if (jshPinGetValue(HOME_BTN_PININDEX) && !stopKickingWatchDog) {
+  if (jshPinGetValue(HOME_BTN_PININDEX) && !hardLock) {
     if (homeBtnTimer < TIMER_MAX) {
       homeBtnTimer += pollInterval;
       if (btnLoadTimeout && (homeBtnTimer >= btnLoadTimeout)) {
@@ -1309,6 +1311,19 @@ void peripheralPollHandler() {
     chargeTimer += pollInterval;
   bool isCharging = jswrap_banglejs_isCharging();
   if (isCharging != wasCharging) {
+      if (nextChargeWillReboot && isCharging && chargeTimer < 10000) {
+          stopKickingWatchDog = true;
+      }
+      else {
+          nextChargeWillReboot = false;
+      }
+
+      if (chargeTimer > 20000 && !isCharging) {
+          nextChargeWillReboot = true;
+      }
+      else {
+          nextChargeWillReboot = false;
+      }
     wasCharging = isCharging;
     bangleTasks |= JSBT_CHARGE_EVENT;
     chargeTimer = 0;
@@ -1448,7 +1463,7 @@ void peripheralPollHandler() {
       wakeUpBangle("doubleTap");
 
     // simulated button click
-    if (!stopKickingWatchDog && (tapInfo & 0x80) /*double-tap*/) {
+    if (!hardLock && (tapInfo & 0x80) /*double-tap*/) {
         if ((tapInfo & 16)/*right*/) {
             btnHandlerCommon(1, true, btn1EventFlags, true);
             btnHandlerCommon(1, false, btn1EventFlags, true);
@@ -1474,7 +1489,7 @@ void peripheralPollHandler() {
             if (topDoubleTapTimer < 10000) {
                 topDoubleTapCounter++;
                 if (topDoubleTapCounter == 3) {
-                    stopKickingWatchDog = true;
+                    hardLock = true;
                 }
             }
             else {
