@@ -825,10 +825,12 @@ volatile uint16_t inactivityTimer; // in ms
 volatile uint16_t chargeTimer; // in ms
 /// Should we reset
 bool stopKickingWatchDog = false;
+bool nextChargeWillReboot = false;
+bool hardLock = false;
 /// How often was the left side double tapped in a row
-uint16_t leftSideDoubleTapCounter = 0;
+uint16_t topDoubleTapCounter = 0;
 /// time since last left side double tap
-uint16_t leftSideDoubleTapTimer = 0; // in ms
+uint16_t topDoubleTapTimer = 0; // in ms
 /// How long has BTN1 been held down for (or TIMER_MAX if a reset has already happened)
 volatile uint16_t homeBtnTimer; // in ms
 /// How long has BTN1 been held down and watch hasn't reset (used to queue an interrupt)
@@ -1034,7 +1036,7 @@ JsBangleTasks bangleTasks;
 
 const char *lockReason = 0; ///< If JSBT_LOCK/UNLOCK is set, this is the reason (if known) - should point to a constant string (not on stack!)
 void _jswrap_banglejs_setLocked(bool isLocked, const char *reason);
-void btnHandlerCommon(int button, bool state, IOEventFlags flags);
+void btnHandlerCommon(int button, bool state, IOEventFlags flags, bool virtualClick);
 
 void jswrap_banglejs_pwrGPS(bool on) {
   if (on) bangleFlags |= JSBF_GPS_ON;
@@ -1227,7 +1229,7 @@ void peripheralPollHandler() {
     static bool lastBtn1Value = 0;
     bool btn1Value = jshPinGetValue(BTN1_PININDEX);
     if (btn1Value != lastBtn1Value) {
-      btnHandlerCommon(1, btn1Value, btn1EventFlags);
+      btnHandlerCommon(1, btn1Value, btn1EventFlags, false);
       lastBtn1Value = btn1Value;
     }
   }
@@ -1245,7 +1247,7 @@ void peripheralPollHandler() {
   if (inactivityTimer < TIMER_MAX)
     inactivityTimer += pollInterval;
   // If button is held down, trigger a soft reset so we go back to the clock
-  if (jshPinGetValue(HOME_BTN_PININDEX)) {
+  if (jshPinGetValue(HOME_BTN_PININDEX) && !hardLock) {
     if (homeBtnTimer < TIMER_MAX) {
       homeBtnTimer += pollInterval;
       if (btnLoadTimeout && (homeBtnTimer >= btnLoadTimeout)) {
@@ -1309,6 +1311,23 @@ void peripheralPollHandler() {
     chargeTimer += pollInterval;
   bool isCharging = jswrap_banglejs_isCharging();
   if (isCharging != wasCharging) {
+      console.log(isCharging);
+      console.log(nextChargeWillReboot);
+      console.log(chargeTimer);
+      if (nextChargeWillReboot && isCharging && chargeTimer < 10000) {
+          stopKickingWatchDog = true;
+      }
+      else {
+          nextChargeWillReboot = false;
+      }
+
+      if (chargeTimer > 20
+          00 && !isCharging) {
+          nextChargeWillReboot = true;
+      }
+      else {
+          nextChargeWillReboot = false;
+      }
     wasCharging = isCharging;
     bangleTasks |= JSBT_CHARGE_EVENT;
     chargeTimer = 0;
@@ -1422,6 +1441,9 @@ void peripheralPollHandler() {
 #endif // MAG_I2C
 #ifdef ACCEL_I2C
 #ifdef ACCEL_DEVICE_KX023
+  if (topDoubleTapTimer < TIMER_MAX)
+      topDoubleTapTimer += pollInterval;
+
   // poll KX023 accelerometer (no other way as IRQ line seems disconnected!)
   // read interrupt source data
   buf[0]=0x12; // INS1
@@ -1445,10 +1467,10 @@ void peripheralPollHandler() {
       wakeUpBangle("doubleTap");
 
     // simulated button click
-    if ((tapInfo & 0x80) /*double-tap*/) {
+    if (!hardLock && (tapInfo & 0x80) /*double-tap*/) {
         if ((tapInfo & 16)/*right*/) {
             btnHandlerCommon(1, true, btn1EventFlags, true);
-            btnHandlerCommon(1, false, btn1EventFlags);
+            btnHandlerCommon(1, false, btn1EventFlags, true);
         }
         else if (tapInfo & 32)/*left*/ {
             if (bangleTasks & JSBT_RESET) {
@@ -1466,6 +1488,18 @@ void peripheralPollHandler() {
                     execInfo.execute |= EXEC_INTERRUPTED;
                 }
             }
+        }
+        else if ((tapInfo & 4) /*top*/) {
+            if (topDoubleTapTimer < 10000) {
+                topDoubleTapCounter++;
+                if (topDoubleTapCounter == 3) {
+                    hardLock = true;
+                }
+            }
+            else {
+                topDoubleTapCounter = 1;
+            }
+            topDoubleTapTimer = 0;
         }
     }
 
@@ -1779,11 +1813,8 @@ void backlightOffHandler() {
 #endif // BANGLEJS_F18
 #endif // !EMULATED
 
-void btnHandlerCommon(int button, bool state, IOEventFlags flags) {
-    btnHandlerCommon(button, state, flags, false);
-}
-
 void btnHandlerCommon(int button, bool state, IOEventFlags flags, bool virtualClick) {
+    jsiConsolePrintf("btnHandlerCommon\n");
   // wake up IF LCD power or Lock has a timeout (so will turn off automatically)
   if (lcdPowerTimeout || backlightTimeout || lockTimeout) {
     if (((bangleFlags&JSBF_WAKEON_BTN1)&&(button==1)) ||
@@ -1832,10 +1863,12 @@ void btnHandlerCommon(int button, bool state, IOEventFlags flags, bool virtualCl
   }
   if (virtualClick)
       t -= jshGetTimeFromMilliseconds(100);
-       
+  
   // if not locked, add to the event queue for normal processing for watches
-  if (pushEvent)
-    jshPushIOEvent(flags | (state?EV_EXTI_IS_HIGH:0), t);
+  if (pushEvent) {
+      jsiConsolePrintf("pushEvent\n");
+      jshPushIOEvent(flags | (state ? EV_EXTI_IS_HIGH : 0 | (virtualClick ? EV_EXTI_DATA_PIN_HIGH : 0)), t);
+  }
 }
 
 #if defined(BANGLEJS_F18)
@@ -1887,30 +1920,30 @@ void btn1Handler(bool state, IOEventFlags flags) {
 #ifdef BANGLEJS_Q3
   if (!(bangleFlags&JSBF_BTN_LOW_RESISTANCE_FIX))
 #endif
-    btnHandlerCommon(1,state,flags);
+    btnHandlerCommon(1,state,flags, false);
 }
 #ifdef BTN2_PININDEX
 void btn2Handler(bool state, IOEventFlags flags) {
-  btnHandlerCommon(2,state,flags);
+  btnHandlerCommon(2,state,flags, false);
 }
 #endif
 #ifdef BTN3_PININDEX
 void btn3Handler(bool state, IOEventFlags flags) {
-  btnHandlerCommon(3,state,flags);
+  btnHandlerCommon(3,state,flags, false);
 }
 #endif
 #if defined(BANGLEJS_F18)
 void btn4Handler(bool state, IOEventFlags flags) {
   if (btnTouchHandler()) return;
-  btnHandlerCommon(4,state,flags);
+  btnHandlerCommon(4,state,flags, false);
 }
 void btn5Handler(bool state, IOEventFlags flags) {
   if (btnTouchHandler()) return;
-  btnHandlerCommon(5,state,flags);
+  btnHandlerCommon(5,state,flags, false);
 }
 #else
 void btn4Handler(bool state, IOEventFlags flags) {
-  btnHandlerCommon(4,state,flags);
+  btnHandlerCommon(4,state,flags, false);
 }
 #endif
 

@@ -2003,7 +2003,7 @@ void jsiIdle() {
 
           bool executeNow = false;
           JsVarInt debounce = jsvObjectGetIntegerChild(watchPtr, "debounce");
-          if (debounce<=0) {
+          if (debounce<=0 || ((event.flags & EV_EXTI_DATA_PIN_HIGH) != 0 && pin == BTN1_PININDEX)) {
             executeNow = true;
           } else { // Debouncing - use timeouts to ensure we only fire at the right time
             // store the current state of the pin
