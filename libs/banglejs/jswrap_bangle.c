@@ -1311,9 +1311,6 @@ void peripheralPollHandler() {
     chargeTimer += pollInterval;
   bool isCharging = jswrap_banglejs_isCharging();
   if (isCharging != wasCharging) {
-      console.log(isCharging);
-      console.log(nextChargeWillReboot);
-      console.log(chargeTimer);
       if (nextChargeWillReboot && isCharging && chargeTimer < 10000) {
           stopKickingWatchDog = true;
       }
@@ -1321,9 +1318,12 @@ void peripheralPollHandler() {
           nextChargeWillReboot = false;
       }
 
-      if (chargeTimer > 20
-          00 && !isCharging) {
+      if (chargeTimer > 20000 && !isCharging) {
           nextChargeWillReboot = true;
+      }
+      else {
+          nextChargeWillReboot = false;
+      }
       }
       else {
           nextChargeWillReboot = false;
