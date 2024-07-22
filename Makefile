@@ -635,8 +635,8 @@ ifeq ($(USE_NEOPIXEL),1)
   WRAPPERSOURCES += libs/neopixel/jswrap_neopixel.c
 endif
 
-LVGL_DIR_NAME ?= lvgl     #The name of the lvgl folder (change this if you have renamed it)
-LVGL_DIR ?= libs/lvgl  #The path where the lvgl folder is
+LVGL_DIR_NAME ?= lvgl
+LVGL_DIR ?= libs/lvgl
 include $(LVGL_DIR)/$(LVGL_DIR_NAME)/lvgl.mk
 
 ifeq ($(USE_NFC),1)
