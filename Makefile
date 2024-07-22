@@ -635,7 +635,9 @@ ifeq ($(USE_NEOPIXEL),1)
   WRAPPERSOURCES += libs/neopixel/jswrap_neopixel.c
 endif
 
-DEFINES += -DUSE_LVGL -DLV_CONF_INCLUDE_SIMPLE
+#DEFINES += -DUSE_LVGL -DLV_CONF_INCLUDE_SIMPLE
+
+DEFINES += -DUSE_LVGL
 
 #INCLUDE += -I$(ROOT)/libs/graphics
 #WRAPPERSOURCES += libs/lvgl/jswrap_lvgl.c
