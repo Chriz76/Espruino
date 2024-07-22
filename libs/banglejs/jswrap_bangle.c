@@ -3699,7 +3699,7 @@ void jswrap_banglejs_setup() {
 	lv_tick_set_cb(getMilliseconds());  
 	disp = lv_display_create(176, 176);
 	lv_display_set_flush_cb(disp, my_flush_cb);
-	lv_display_set_buffers(disp, buf, NULL, sizeof(buf), LV_DISPLAY_RENDER_MODE_PARTIAL);
+	lv_display_set_buffers(disp, lvbuf, NULL, sizeof(lvbuf), LV_DISPLAY_RENDER_MODE_PARTIAL);
 }
 
 /*JSON{
