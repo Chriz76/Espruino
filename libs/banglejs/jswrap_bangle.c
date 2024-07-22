@@ -79,6 +79,10 @@
 #include "hrm_vc31.h" // for Bangle.setOptions
 #endif
 
+#include "lvgl.h"
+
+static uint16_t buf[176 * 176 / 10];
+
 /*TYPESCRIPT
 declare const BTN1: Pin;
 declare const BTN2: Pin;
@@ -3790,6 +3794,9 @@ NO_INLINE void jswrap_banglejs_hwinit() {
   // set default graphics themes - before we even start to load settings.json
   jswrap_banglejs_setTheme();
   graphicsFillRect(&graphicsInternal, 0,0,LCD_WIDTH-1,LCD_HEIGHT-1,graphicsTheme.bg);
+  
+  lv_init();
+  //lv_display_set_buffers(disp, buf, NULL, sizeof(buf), LV_DISPLAY_RENDER_MODE_PARTIAL);
 }
 
 /*JSON{
