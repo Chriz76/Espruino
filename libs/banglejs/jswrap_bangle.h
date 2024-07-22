@@ -30,7 +30,10 @@ int jswrap_banglejs_isLocked();
 //void my_flush_cb(lv_display_t * display, const lv_area_t * area, uint8_t * px_map);
 
 //int getMilliseconds();
-void jswrap_banglejs_setup();
+void jswrap_banglejs_tick();
+void jswrap_banglejs_flush();
+void jswrap_banglejs_create();
+void jswrap_banglejs_buffers();
 void jswrap_banglejs_label();
 
 void jswrap_banglejs_setPollInterval(JsVarFloat interval);

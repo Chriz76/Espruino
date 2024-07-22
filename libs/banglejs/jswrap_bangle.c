@@ -3688,17 +3688,58 @@ int getMilliseconds() {
 /*JSON{
     "type" : "staticmethod",
     "class" : "Bangle",
-    "name" : "setup",
-    "generate" : "jswrap_banglejs_setup",
+    "name" : "tick",
+    "generate" : "jswrap_banglejs_tick",
     "params" : [],
     "ifdef" : "BANGLEJS"
 }
 XXX
 */
-void jswrap_banglejs_setup() { 
+void jswrap_banglejs_tick() { 
 	lv_tick_set_cb(getMilliseconds);  
+}
+
+/*JSON{
+    "type" : "staticmethod",
+    "class" : "Bangle",
+    "name" : "flush",
+    "generate" : "jswrap_banglejs_flush",
+    "params" : [],
+    "ifdef" : "BANGLEJS"
+}
+XXX
+*/
+void jswrap_banglejs_flush() { 
+	lv_display_set_buffers(disp, lvbuf, NULL, sizeof(lvbuf), LV_DISPLAY_RENDER_MODE_PARTIAL);
+}
+
+/*JSON{
+    "type" : "staticmethod",
+    "class" : "Bangle",
+    "name" : "create",
+    "generate" : "jswrap_banglejs_create",
+    "params" : [],
+    "ifdef" : "BANGLEJS"
+}
+XXX
+*/
+void jswrap_banglejs_create() { 
 	disp = lv_display_create(176, 176);
-	lv_display_set_flush_cb(disp, my_flush_cb);
+}
+
+
+
+/*JSON{
+    "type" : "staticmethod",
+    "class" : "Bangle",
+    "name" : "buffers",
+    "generate" : "jswrap_banglejs_buffers",
+    "params" : [],
+    "ifdef" : "BANGLEJS"
+}
+XXX
+*/
+void jswrap_banglejs_buffers() { 
 	lv_display_set_buffers(disp, lvbuf, NULL, sizeof(lvbuf), LV_DISPLAY_RENDER_MODE_PARTIAL);
 }
 
