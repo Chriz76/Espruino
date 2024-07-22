@@ -81,7 +81,7 @@
 
 #include "lvgl.h"
 
-#static uint16_t buf[176 * 176 / 10];
+//static uint16_t buf[176 * 176 / 10];
 
 /*TYPESCRIPT
 declare const BTN1: Pin;
