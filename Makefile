@@ -644,11 +644,11 @@ DEFINES += -DUSE_LVGL -DLV_CONF_INCLUDE_SIMPLE
 #libs/lvgl/lcd_spi_nrf.c
 
 ##
-INCLUDE += libs/lvgl
-INCLUDE += libs/lvgl/lvgl
-LVGL_DIR = libs/lvgl/lvgl
+INCLUDE += -I$(ROOT)/libs/lvgl
+INCLUDE += -I$(ROOT)/libs/lvgl/lvgl
+LVGL_DIR = libs/lvgl
 LVGL_DIR_NAME = lvgl
-include libs/lvgl/lvgl/lvgl.mk
+include $(ROOT)/libs/lvgl/lvgl/lvgl.mk
 ##
 SOURCES += $(CSRCS)
 ##
