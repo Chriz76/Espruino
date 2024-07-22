@@ -635,9 +635,23 @@ ifeq ($(USE_NEOPIXEL),1)
   WRAPPERSOURCES += libs/neopixel/jswrap_neopixel.c
 endif
 
-LVGL_DIR_NAME ?= lvgl
-LVGL_DIR ?= libs/lvgl
-include $(LVGL_DIR)/$(LVGL_DIR_NAME)/lvgl.mk
+DEFINES += -DUSE_LVGL -DLV_CONF_INCLUDE_SIMPLE
+
+#INCLUDE += -I$(ROOT)/libs/graphics
+#WRAPPERSOURCES += libs/lvgl/jswrap_lvgl.c
+
+#SOURCES += \
+#libs/lvgl/lcd_spi_nrf.c
+
+##
+INCLUDE += -I$(ROOT)/libs/lvgl
+INCLUDE += -I$(ROOT)/libs/lvgl/lvgl
+LVGL_DIR = libs/lvgl
+LVGL_DIR_NAME = lvgl
+include $(ROOT)/libs/lvgl/lvgl/lvgl.mk
+##
+SOURCES += $(CSRCS)
+##
 
 ifeq ($(USE_NFC),1)
   DEFINES += -DUSE_NFC -DNFC_HAL_ENABLED=1
