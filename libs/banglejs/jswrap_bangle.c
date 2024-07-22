@@ -81,7 +81,7 @@
 
 #include "lvgl.h"
 
-//static uint16_t buf[176 * 176 / 10];
+static uint16_t lvbuf[176 * 176 / 10];
 
 /*TYPESCRIPT
 declare const BTN1: Pin;
@@ -3686,6 +3686,40 @@ int getMilliseconds() {
 }
 
 /*JSON{
+    "type" : "staticmethod",
+    "class" : "Bangle",
+    "name" : "setup",
+    "generate" : "jswrap_banglejs_setup",
+    "params" : [],
+    "ifdef" : "BANGLEJS"
+}
+XXX
+*/
+void jswrap_banglejs_setup() { 
+	lv_tick_set_cb(getMilliseconds());  
+	disp = lv_display_create(176, 176);
+	lv_display_set_flush_cb(disp, my_flush_cb);
+	lv_display_set_buffers(disp, buf, NULL, sizeof(buf), LV_DISPLAY_RENDER_MODE_PARTIAL);
+}
+
+/*JSON{
+    "type" : "staticmethod",
+    "class" : "Bangle",
+    "name" : "label",
+    "generate" : "jswrap_banglejs_label",
+    "params" : [],
+    "ifdef" : "BANGLEJS"
+}
+XXX
+*/
+void jswrap_banglejs_label() {
+    // Create a simple LVGL object to test
+    lv_obj_t *label = lv_label_create(lv_scr_act());
+    lv_label_set_text(label, "Hello, LVGL!");
+    lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
+}
+
+/*JSON{
   "type" : "hwinit",
   "generate" : "jswrap_banglejs_hwinit"
 }*/
@@ -3821,18 +3855,6 @@ NO_INLINE void jswrap_banglejs_hwinit() {
   
   
   lv_init();
-  /* 
-  lv_tick_set_cb(getMilliseconds());  
-  disp = lv_display_create(176, 176);
-
-	lv_display_set_flush_cb(disp, my_flush_cb);
-	
-	lv_display_set_buffers(disp, buf, NULL, sizeof(buf), LV_DISPLAY_RENDER_MODE_PARTIAL);
-*/
-    // Create a simple LVGL object to test
-    //lv_obj_t *label = lv_label_create(lv_scr_act());
-    //lv_label_set_text(label, "Hello, LVGL!");
-    //lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
 }
 
 /*JSON{
