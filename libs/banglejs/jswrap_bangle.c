@@ -3677,7 +3677,11 @@ void my_flush_cb(lv_display_t * display, const lv_area_t * area, uint8_t * px_ma
 
     /* IMPORTANT!!!
      * Inform LVGL that you are ready with the flushing and buf is not used anymore*/
-    lv_display_flush_ready(disp);
+    lv_display_flush_ready(display);
+}
+
+int getMilliseconds() {
+	return jshGetMillisecondsFromTime(jshGetSystemTime()/1000);
 }
 
 /*JSON{
@@ -3815,8 +3819,8 @@ NO_INLINE void jswrap_banglejs_hwinit() {
   graphicsFillRect(&graphicsInternal, 0,0,LCD_WIDTH-1,LCD_HEIGHT-1,graphicsTheme.bg);
   
   lv_init();
-  lv_tick_set_cb(jsiGetMilliseconds());  
-  lv_display_t * display = lv_display_create(176, 176);
+  lv_tick_set_cb(getMilliseconds());  
+  lv_display_t * disp = lv_display_create(176, 176);
 
 
 	lv_display_set_flush_cb(disp, my_flush_cb);
