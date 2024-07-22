@@ -3819,7 +3819,7 @@ NO_INLINE void jswrap_banglejs_hwinit() {
   lv_display_t * display = lv_display_create(176, 176);
 
 
-	lv_display_set_flush_cb(disp, my_flush_cb)
+	lv_display_set_flush_cb(disp, my_flush_cb);
 	
 	lv_display_set_buffers(disp, buf, NULL, sizeof(buf), LV_DISPLAY_RENDER_MODE_PARTIAL);
 
