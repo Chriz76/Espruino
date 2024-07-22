@@ -3662,22 +3662,23 @@ NO_INLINE void jswrap_banglejs_setTheme() {
 }
 
 
-// Example display flush callback function
-void my_disp_flush(lv_disp_drv_t *disp_drv, const lv_area_t *area, lv_color_t *color_p) {
-    // Send the content of the buffer to the display
-    for (int y = area->y1; y <= area->y2; y++) {
-        for (int x = area->x1; x <= area->x2; x++) {
-            // Replace this with the code to send color_p to your display
-            //my_display_set_pixel(x, y, *color_p);
-            color_p++;
+void my_flush_cb(lv_display_t * display, const lv_area_t * area, uint8_t * px_map)
+{
+    /*The most simple case (but also the slowest) to put all pixels to the screen one-by-one
+     *`put_px` is just an example, it needs to be implemented by you.*/
+    uint16_t * buf16 = (uint16_t *)px_map; /*Let's say it's a 16 bit (RGB565) display*/
+    int32_t x, y;
+    for(y = area->y1; y <= area->y2; y++) {
+        for(x = area->x1; x <= area->x2; x++) {
+            //put_px(x, y, *buf16);
+            //buf16++;
         }
     }
 
-    // Inform LVGL that you are ready with the flushing
-    lv_disp_flush_ready(disp_drv);
+    /* IMPORTANT!!!
+     * Inform LVGL that you are ready with the flushing and buf is not used anymore*/
+    lv_display_flush_ready(disp);
 }
-
-lv_disp_drv_t disp_drv;
 
 /*JSON{
   "type" : "hwinit",
@@ -3814,25 +3815,18 @@ NO_INLINE void jswrap_banglejs_hwinit() {
   graphicsFillRect(&graphicsInternal, 0,0,LCD_WIDTH-1,LCD_HEIGHT-1,graphicsTheme.bg);
   
   lv_init();
-  
-  // Initialize the display driver
-    
-    lv_disp_drv_init(&disp_drv);
+  lv_tick_set_cb(jsiGetMilliseconds());  
+  lv_display_t * display = lv_display_create(176, 176);
 
-    // Set up the flush callback function
-    disp_drv.flush_cb = my_disp_flush;
 
-    // Set the display buffers
-	lv_display_set_buffers(&disp_drv, buf, NULL, sizeof(buf), LV_DISPLAY_RENDER_MODE_PARTIAL);
-
-    // Register the display driver
-    lv_disp_drv_register(&disp_drv);
+	lv_display_set_flush_cb(disp, my_flush_cb)
+	
+	lv_display_set_buffers(disp, buf, NULL, sizeof(buf), LV_DISPLAY_RENDER_MODE_PARTIAL);
 
     // Create a simple LVGL object to test
     lv_obj_t *label = lv_label_create(lv_scr_act());
     lv_label_set_text(label, "Hello, LVGL!");
     lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
-
 }
 
 /*JSON{
