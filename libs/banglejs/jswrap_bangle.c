@@ -3661,6 +3661,7 @@ NO_INLINE void jswrap_banglejs_setTheme() {
 #endif
 }
 
+static lv_display_t * disp;
 
 void my_flush_cb(lv_display_t * display, const lv_area_t * area, uint8_t * px_map)
 {
@@ -3681,7 +3682,7 @@ void my_flush_cb(lv_display_t * display, const lv_area_t * area, uint8_t * px_ma
 }
 
 int getMilliseconds() {
-	return jshGetMillisecondsFromTime(jshGetSystemTime()/1000);
+	return jshGetMillisecondsFromTime(jshGetSystemTime());
 }
 
 /*JSON{
@@ -3820,7 +3821,7 @@ NO_INLINE void jswrap_banglejs_hwinit() {
   
   lv_init();
   lv_tick_set_cb(getMilliseconds());  
-  lv_display_t * disp = lv_display_create(176, 176);
+  disp = lv_display_create(176, 176);
 
 
 	lv_display_set_flush_cb(disp, my_flush_cb);
@@ -3828,9 +3829,9 @@ NO_INLINE void jswrap_banglejs_hwinit() {
 	lv_display_set_buffers(disp, buf, NULL, sizeof(buf), LV_DISPLAY_RENDER_MODE_PARTIAL);
 
     // Create a simple LVGL object to test
-    lv_obj_t *label = lv_label_create(lv_scr_act());
-    lv_label_set_text(label, "Hello, LVGL!");
-    lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
+    //lv_obj_t *label = lv_label_create(lv_scr_act());
+    //lv_label_set_text(label, "Hello, LVGL!");
+    //lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
 }
 
 /*JSON{
