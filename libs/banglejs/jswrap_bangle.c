@@ -81,7 +81,7 @@
 
 #include "lvgl.h"
 
-static uint16_t buf[176 * 176 / 10];
+//static uint16_t buf[176 * 176 / 10];
 
 /*TYPESCRIPT
 declare const BTN1: Pin;
@@ -3819,15 +3819,16 @@ NO_INLINE void jswrap_banglejs_hwinit() {
   jswrap_banglejs_setTheme();
   graphicsFillRect(&graphicsInternal, 0,0,LCD_WIDTH-1,LCD_HEIGHT-1,graphicsTheme.bg);
   
+  
   lv_init();
+  /* 
   lv_tick_set_cb(getMilliseconds());  
   disp = lv_display_create(176, 176);
-
 
 	lv_display_set_flush_cb(disp, my_flush_cb);
 	
 	lv_display_set_buffers(disp, buf, NULL, sizeof(buf), LV_DISPLAY_RENDER_MODE_PARTIAL);
-
+*/
     // Create a simple LVGL object to test
     //lv_obj_t *label = lv_label_create(lv_scr_act());
     //lv_label_set_text(label, "Hello, LVGL!");
@@ -4386,7 +4387,7 @@ void jswrap_banglejs_kill() {
   "generate" : "jswrap_banglejs_idle"
 }*/
 bool jswrap_banglejs_idle() {
-	lv_timer_handler();
+	//lv_timer_handler();
   JsVar *bangle =jsvObjectGetChildIfExists(execInfo.root, "Bangle");
   /* Check if we have an accelerometer listener, and set JSBF_ACCEL_LISTENER
    * accordingly - so we don't get a wakeup if we have no listener. */
