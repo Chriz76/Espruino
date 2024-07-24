@@ -3671,8 +3671,9 @@ void my_flush_cb(lv_display_t * display, const lv_area_t * area, uint8_t * px_ma
     int32_t x, y;
     for(y = area->y1; y <= area->y2; y++) {
         for(x = area->x1; x <= area->x2; x++) {
+			jsiConsolePrintf("%d %d %d\n", x, y, *px_map);
             //put_px(x, y, *buf16);
-            //buf16++;
+            px_map++;
         }
     }
 
@@ -3688,77 +3689,34 @@ int getMilliseconds() {
 /*JSON{
     "type" : "staticmethod",
     "class" : "Bangle",
-    "name" : "tick",
-    "generate" : "jswrap_banglejs_tick",
-    "params" : [],
+    "name" : "lvgl",
+    "generate" : "jswrap_banglejs_lvgl",
+    "params" : [["step","int",""]],
     "ifdef" : "BANGLEJS"
 }
 XXX
 */
-void jswrap_banglejs_tick() { 
-	lv_tick_set_cb(getMilliseconds);  
+void jswrap_banglejs_lvgl(int step) { 
+	if (step == 0)
+		disp = lv_display_create(176, 176);
+	else if (step == 1)
+		lv_display_set_flush_cb(disp, my_flush_cb);
+	else if (step == 2)
+		lv_display_set_buffers(disp, lvbuf, NULL, sizeof(lvbuf), LV_DISPLAY_RENDER_MODE_PARTIAL);
+	else if (step == 3)
+		lv_tick_set_cb(getMilliseconds);  
+	else if (step == 4) {
+		// Create a simple LVGL object to test
+		lv_obj_t *label = lv_label_create(lv_scr_act());
+		lv_label_set_text(label, "Hello, LVGL!");
+		lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);	
+	else if (step == 5)
+		lv_timer_handler();
+	} else 
+		jsiConsolePrintf("Unknown lvgl option\n");
+		
 }
 
-/*JSON{
-    "type" : "staticmethod",
-    "class" : "Bangle",
-    "name" : "flush",
-    "generate" : "jswrap_banglejs_flush",
-    "params" : [],
-    "ifdef" : "BANGLEJS"
-}
-XXX
-*/
-void jswrap_banglejs_flush() { 
-	lv_display_set_buffers(disp, lvbuf, NULL, sizeof(lvbuf), LV_DISPLAY_RENDER_MODE_PARTIAL);
-}
-
-/*JSON{
-    "type" : "staticmethod",
-    "class" : "Bangle",
-    "name" : "create",
-    "generate" : "jswrap_banglejs_create",
-    "params" : [],
-    "ifdef" : "BANGLEJS"
-}
-XXX
-*/
-void jswrap_banglejs_create() { 
-	disp = lv_display_create(176, 176);
-}
-
-
-
-/*JSON{
-    "type" : "staticmethod",
-    "class" : "Bangle",
-    "name" : "buffers",
-    "generate" : "jswrap_banglejs_buffers",
-    "params" : [],
-    "ifdef" : "BANGLEJS"
-}
-XXX
-*/
-void jswrap_banglejs_buffers() { 
-	lv_display_set_buffers(disp, lvbuf, NULL, sizeof(lvbuf), LV_DISPLAY_RENDER_MODE_PARTIAL);
-}
-
-/*JSON{
-    "type" : "staticmethod",
-    "class" : "Bangle",
-    "name" : "label",
-    "generate" : "jswrap_banglejs_label",
-    "params" : [],
-    "ifdef" : "BANGLEJS"
-}
-XXX
-*/
-void jswrap_banglejs_label() {
-    // Create a simple LVGL object to test
-    lv_obj_t *label = lv_label_create(lv_scr_act());
-    lv_label_set_text(label, "Hello, LVGL!");
-    lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
-}
 
 /*JSON{
   "type" : "hwinit",
