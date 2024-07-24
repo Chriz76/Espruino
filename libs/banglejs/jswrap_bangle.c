@@ -3710,9 +3710,9 @@ void jswrap_banglejs_lvgl(int step) {
 		lv_obj_t *label = lv_label_create(lv_scr_act());
 		lv_label_set_text(label, "Hello, LVGL!");
 		lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);	
-	else if (step == 5)
+	} else if (step == 5)
 		lv_timer_handler();
-	} else 
+	else 
 		jsiConsolePrintf("Unknown lvgl option\n");
 		
 }
