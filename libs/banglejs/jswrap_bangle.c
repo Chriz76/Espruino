@@ -3674,12 +3674,18 @@ void my_flush_cb(lv_display_t * display, const lv_area_t * area, uint8_t * px_ma
     for(y = area->y1; y <= area->y2; y++) {
         for(x = area->x1; x <= area->x2; x++) {
 			uint16_t col = *buf16;
+			graphicsInternal.setPixel(x, y, (int)col);
 			if (col != colOld)
 				jsiConsolePrintf("%d %d %d\n", x, y, (int)col);
             colOld = col;
 			buf16++;
         }
     }
+    graphicsInternal.data.modMinX = 0;
+    graphicsInternal.data.modMinY = 0;
+    graphicsInternal.data.modMaxX = LCD_WIDTH-1;
+    graphicsInternal.data.modMaxY = LCD_HEIGHT-1;	
+	graphicsInternalFlip();
 	jsiConsolePrintf("Ended\n");
 
     /* IMPORTANT!!!
