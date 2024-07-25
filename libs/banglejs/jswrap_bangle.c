@@ -3672,7 +3672,7 @@ void my_flush_cb(lv_display_t * display, const lv_area_t * area, uint8_t * px_ma
     for(y = area->y1; y <= area->y2; y++) {
         for(x = area->x1; x <= area->x2; x++) {
 			uint16_t col = *buf16;
-			jsiConsolePrintf("%d %d %u\n", x, y, (unsigned int)col);
+			jsiConsolePrintf("%d %d %u\n", x, y, 1/*(unsigned int)col*/);
             buf16++;
         }
     }
