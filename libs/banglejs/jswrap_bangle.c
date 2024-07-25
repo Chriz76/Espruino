@@ -3671,9 +3671,8 @@ void my_flush_cb(lv_display_t * display, const lv_area_t * area, uint8_t * px_ma
     int32_t x, y;
     for(y = area->y1; y <= area->y2; y++) {
         for(x = area->x1; x <= area->x2; x++) {
-			jsiConsolePrintf("%d %d %d\n", x, y, *px_map);
-            //put_px(x, y, *buf16);
-            px_map++;
+			jsiConsolePrintf("%d %d %u\n", x, y, (unsigned int)*buf16);
+            buf16++;
         }
     }
 
