@@ -3669,13 +3669,18 @@ void my_flush_cb(lv_display_t * display, const lv_area_t * area, uint8_t * px_ma
      *`put_px` is just an example, it needs to be implemented by you.*/
     uint16_t * buf16 = (uint16_t *)px_map; /*Let's say it's a 16 bit (RGB565) display*/
     int32_t x, y;
+	uint16_t colOld = 0;
+	jsiConsolePrintf("Started\n");
     for(y = area->y1; y <= area->y2; y++) {
         for(x = area->x1; x <= area->x2; x++) {
 			uint16_t col = *buf16;
-			jsiConsolePrintf("%d %d %d\n", x, y, (int)col);
-            buf16++;
+			if (col != colOld)
+				jsiConsolePrintf("%d %d %d\n", x, y, (int)col);
+            colOld = col;
+			buf16++;
         }
     }
+	jsiConsolePrintf("Ended\n");
 
     /* IMPORTANT!!!
      * Inform LVGL that you are ready with the flushing and buf is not used anymore*/
