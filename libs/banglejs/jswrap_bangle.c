@@ -3674,7 +3674,7 @@ void my_flush_cb(lv_display_t * display, const lv_area_t * area, uint8_t * px_ma
     for(y = area->y1; y <= area->y2; y++) {
         for(x = area->x1; x <= area->x2; x++) {
 			uint16_t col = *buf16;
-			lcdMemLCD_setPixel(&graphicsInternal,(int)x, (int)y, col);
+			graphicsInternal.setPixel(&graphicsInternal,(int)x, (int)y, col);
 			if (col != colOld)
 				jsiConsolePrintf("%d %d %d\n", x, y, (int)col);
             colOld = col;
