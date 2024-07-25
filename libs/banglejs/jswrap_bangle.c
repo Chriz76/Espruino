@@ -3669,23 +3669,33 @@ void my_flush_cb(lv_display_t * display, const lv_area_t * area, uint8_t * px_ma
      *`put_px` is just an example, it needs to be implemented by you.*/
     uint16_t * buf16 = (uint16_t *)px_map; /*Let's say it's a 16 bit (RGB565) display*/
     int32_t x, y;
-	uint16_t colOld = 0;
+	//uint16_t colOld = 0;
 	jsiConsolePrintf("Started\n");
+
+	if (graphicsInternal.data.modMinX > area->x1)
+	    graphicsInternal.data.modMinX = area->x1;
+	if (graphicsInternal.data.modMinY > area->y1)
+	    graphicsInternal.data.modMinY = area->y1;
+
     for(y = area->y1; y <= area->y2; y++) {
         for(x = area->x1; x <= area->x2; x++) {
-			uint16_t col = *buf16;
-			graphicsInternal.setPixel(&graphicsInternal,(int)x, (int)y, col);
-			if (col != colOld)
-				jsiConsolePrintf("%d %d %d\n", x, y, (int)col);
-            colOld = col;
+			//uint16_t col = *buf16;
+			graphicsInternal.setPixel(&graphicsInternal,(int)x, (int)y, *buf16);
+			//if (col != colOld)
+			//	jsiConsolePrintf("%d %d %d\n", x, y, (int)col);
+            //colOld = col;
 			buf16++;
         }
     }
-    graphicsInternal.data.modMinX = 0;
-    graphicsInternal.data.modMinY = 0;
-    graphicsInternal.data.modMaxX = LCD_WIDTH-1;
-    graphicsInternal.data.modMaxY = LCD_HEIGHT-1;	
-	graphicsInternalFlip();
+
+	if (graphicsInternal.data.modMaxX < area->x2)
+	    graphicsInternal.data.modMaxX = area->x2;
+	if (graphicsInternal.data.modMaxY < area->y2)
+	    graphicsInternal.data.modMaxY = area->y2;
+	
+	if(lv_display_flush_is_last(display))
+		graphicsInternalFlip();
+	
 	jsiConsolePrintf("Ended\n");
 
     /* IMPORTANT!!!
@@ -3696,6 +3706,8 @@ void my_flush_cb(lv_display_t * display, const lv_area_t * area, uint8_t * px_ma
 int getMilliseconds() {
 	return jshGetMillisecondsFromTime(jshGetSystemTime());
 }
+
+static int labelPos = 0;
 
 /*JSON{
     "type" : "staticmethod",
@@ -3720,7 +3732,8 @@ void jswrap_banglejs_lvgl(int step) {
 		// Create a simple LVGL object to test
 		lv_obj_t *label = lv_label_create(lv_scr_act());
 		lv_label_set_text(label, "Hello, LVGL!");
-		lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);	
+		lv_obj_align(label, LV_ALIGN_CENTER, labelPos, labelPos);	
+		labelPos += 10;
 	} else if (step == 5)
 		lv_timer_handler();
 	else 
