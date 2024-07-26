@@ -1220,6 +1220,8 @@ void jswrap_banglejs_kickPollWatchdog() {
 /* Scan peripherals for any data that's needed
  * Also, holding down both buttons will reboot */
 void peripheralPollHandler() {
+	if (timerHandler2)
+		lv_timer_handler();	
   JsSysTime time = jshGetSystemTime();
 
 #ifdef BANGLEJS_Q3
@@ -3721,6 +3723,19 @@ void my_log_cb(lv_log_level_t level, const char * buf)
 	jsiConsolePrintf("%s", buf);
 }
 
+static bool timerHandler1 = false;
+static bool timerHandler2 = false;
+
+void my_read_cb(lv_indev_t * indev, lv_indev_data_t*data)
+{	
+  if(touchPts) {
+    data->point.x = touchX;
+    data->point.y = touchY;
+    data->state = LV_INDEV_STATE_PRESSED;
+  } else {
+    data->state = LV_INDEV_STATE_RELEASED;
+  }
+}
 
 /*JSON{
     "type" : "staticmethod",
@@ -3736,8 +3751,11 @@ void jswrap_banglejs_lvgl(int step) {
 	if (step == 0) {
 		disp = lv_display_create(176, 176);
 		lv_log_register_print_cb(my_log_cb);
+		lv_indev_t * indev = lv_indev_create();
+		lv_indev_set_type(indev, LV_INDEV_TYPE_POINTER);  	
 	} else if (step == 1)
 		lv_display_set_flush_cb(disp, my_flush_cb);
+		lv_indev_set_read_cb(indev, my_read_cb);
 	else if (step == 2)
 		lv_display_set_buffers(disp, lvbuf, NULL, sizeof(lvbuf), LV_DISPLAY_RENDER_MODE_PARTIAL);
 	else if (step == 3)
@@ -3751,7 +3769,9 @@ void jswrap_banglejs_lvgl(int step) {
 		lv_obj_align(label, LV_ALIGN_CENTER, labelPos, labelPos);	
 		labelPos += 10;
 	} else if (step == 5)
-		lv_timer_handler();
+		timerHandler1 = true;
+	} else if (step == 6)
+		timerHandler2 = true;	
 	else 
 		jsiConsolePrintf("Unknown lvgl option\n");
 		
@@ -4448,7 +4468,8 @@ void jswrap_banglejs_kill() {
   "generate" : "jswrap_banglejs_idle"
 }*/
 bool jswrap_banglejs_idle() {
-	//lv_timer_handler();
+	if (timerHandler1)
+		lv_timer_handler();
   JsVar *bangle =jsvObjectGetChildIfExists(execInfo.root, "Bangle");
   /* Check if we have an accelerometer listener, and set JSBF_ACCEL_LISTENER
    * accordingly - so we don't get a wakeup if we have no listener. */
