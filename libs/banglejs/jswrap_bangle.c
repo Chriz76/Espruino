@@ -3755,10 +3755,10 @@ void jswrap_banglejs_lvgl(int step) {
 		lv_log_register_print_cb(my_log_cb);
 		lv_indev_t * indev = lv_indev_create();
 		lv_indev_set_type(indev, LV_INDEV_TYPE_POINTER);  	
-	} else if (step == 1)
+	} else if (step == 1) {
 		lv_display_set_flush_cb(disp, my_flush_cb);
 		lv_indev_set_read_cb(indev, my_read_cb);
-	else if (step == 2)
+	} else if (step == 2)
 		lv_display_set_buffers(disp, lvbuf, NULL, sizeof(lvbuf), LV_DISPLAY_RENDER_MODE_PARTIAL);
 	else if (step == 3)
 		lv_tick_set_cb(getMilliseconds);  
