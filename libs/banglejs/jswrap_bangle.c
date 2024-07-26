@@ -3727,7 +3727,9 @@ static bool timerHandler1 = false;
 static bool timerHandler2 = false;
 
 void my_read_cb(lv_indev_t * indev, lv_indev_data_t*data)
-{	
+{
+	jsiConsolePrintf("%d %d %d", touchX, touchY, touchPts);
+	
   if(touchPts) {
     data->point.x = touchX;
     data->point.y = touchY;
