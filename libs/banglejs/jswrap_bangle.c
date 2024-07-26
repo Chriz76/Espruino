@@ -3709,6 +3709,12 @@ int getMilliseconds() {
 
 static int labelPos = 0;
 
+void my_log_cb(lv_log_level_t level, const char * buf)
+{
+	jsiConsolePrintf("%s", buf);
+}
+
+
 /*JSON{
     "type" : "staticmethod",
     "class" : "Bangle",
@@ -3722,6 +3728,7 @@ XXX
 void jswrap_banglejs_lvgl(int step) { 
 	if (step == 0)
 		disp = lv_display_create(176, 176);
+		lv_log_register_print_cb(my_log_cb);
 	else if (step == 1)
 		lv_display_set_flush_cb(disp, my_flush_cb);
 	else if (step == 2)
@@ -3731,7 +3738,7 @@ void jswrap_banglejs_lvgl(int step) {
 	else if (step == 4) {
 		// Create a simple LVGL object to test
 		lv_obj_t *label = lv_label_create(lv_scr_act());
-		lv_label_set_text(label, "Hello, LVGL!");
+		lv_label_set_text(label, "Hello");
 		lv_obj_align(label, LV_ALIGN_CENTER, labelPos, labelPos);	
 		labelPos += 10;
 	} else if (step == 5)
