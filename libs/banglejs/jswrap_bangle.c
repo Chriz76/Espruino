@@ -82,6 +82,8 @@
 #include "lvgl.h"
 
 static uint16_t lvbuf[176 * 176 / 10];
+static bool timerHandler1 = false;
+static bool timerHandler2 = false;
 
 /*TYPESCRIPT
 declare const BTN1: Pin;
@@ -3723,9 +3725,6 @@ void my_log_cb(lv_log_level_t level, const char * buf)
 	jsiConsolePrintf("%s", buf);
 }
 
-static bool timerHandler1 = false;
-static bool timerHandler2 = false;
-
 void my_read_cb(lv_indev_t * indev, lv_indev_data_t*data)
 {
 	jsiConsolePrintf("%d %d %d", touchX, touchY, touchPts);
@@ -3738,6 +3737,8 @@ void my_read_cb(lv_indev_t * indev, lv_indev_data_t*data)
     data->state = LV_INDEV_STATE_RELEASED;
   }
 }
+
+lv_indev_t * indev;
 
 /*JSON{
     "type" : "staticmethod",
@@ -3753,7 +3754,7 @@ void jswrap_banglejs_lvgl(int step) {
 	if (step == 0) {
 		disp = lv_display_create(176, 176);
 		lv_log_register_print_cb(my_log_cb);
-		lv_indev_t * indev = lv_indev_create();
+		indev = lv_indev_create();
 		lv_indev_set_type(indev, LV_INDEV_TYPE_POINTER);  	
 	} else if (step == 1) {
 		lv_display_set_flush_cb(disp, my_flush_cb);
