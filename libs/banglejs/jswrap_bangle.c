@@ -3703,7 +3703,7 @@ void my_flush_cb(lv_display_t * display, const lv_area_t * area, uint8_t * px_ma
     lv_display_flush_ready(display);
 }
 
-int getMilliseconds() {
+uint32_t getMilliseconds() {
 	return jshGetMillisecondsFromTime(jshGetSystemTime());
 }
 
