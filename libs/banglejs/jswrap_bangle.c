@@ -3703,8 +3703,15 @@ void my_flush_cb(lv_display_t * display, const lv_area_t * area, uint8_t * px_ma
     lv_display_flush_ready(display);
 }
 
+static int64_t substract = 0;
+
 uint32_t getMilliseconds() {
-	return jshGetMillisecondsFromTime(jshGetSystemTime());
+	if (substract == 0) {
+		substract = jshGetSystemTime();
+		return 0;
+	} else {
+		return jshGetMillisecondsFromTime(jshGetSystemTime() - substract);
+	};
 }
 
 static int labelPos = 0;
