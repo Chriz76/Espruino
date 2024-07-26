@@ -3773,7 +3773,7 @@ void jswrap_banglejs_lvgl(int step) {
 		labelPos += 10;
 	} else if (step == 5)
 		timerHandler1 = true;
-	} else if (step == 6)
+	else if (step == 6)
 		timerHandler2 = true;	
 	else 
 		jsiConsolePrintf("Unknown lvgl option\n");
