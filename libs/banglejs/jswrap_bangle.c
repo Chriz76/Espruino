@@ -3736,8 +3736,8 @@ void jswrap_banglejs_lvgl(int step) {
 	else if (step == 3)
 		lv_tick_set_cb(getMilliseconds);  
 	else if (step == 4) {
-		jsiConsolePrintf("%d", jshGetSystemTime() / jshGetTimeFromMilliseconds(1000));
-		jsiConsolePrintf("%d", getMilliseconds());
+		jsiConsolePrintf("A %d", jshGetSystemTime() / jshGetTimeFromMilliseconds(1000));
+		jsiConsolePrintf("B %d", getMilliseconds());
 		// Create a simple LVGL object to test
 		lv_obj_t *label = lv_label_create(lv_scr_act());
 		lv_label_set_text(label, "Hello");
