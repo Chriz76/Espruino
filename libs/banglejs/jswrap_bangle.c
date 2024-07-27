@@ -3797,7 +3797,6 @@ void jswrap_banglejs_lvgl(int step) {
 	else if (step == 4) {
 		jsiConsolePrintf("A %d", jshGetSystemTime() / jshGetTimeFromMilliseconds(1000));
 		jsiConsolePrintf("B %d", getMilliseconds());
-		//lv_example_arc_1();
 		// Create a simple LVGL object to test
 		lv_obj_t *label = lv_label_create(lv_scr_act());
 		lv_label_set_text(label, "Hello");
@@ -3806,7 +3805,8 @@ void jswrap_banglejs_lvgl(int step) {
 	} else if (step == 5)
 		timerHandler1 = true;
 	else if (step == 6)
-		timerHandler2 = true;	
+		lv_example_arc_1();
+	//timerHandler2 = true;	
 	else 
 		jsiConsolePrintf("Unknown lvgl option\n");
 		
