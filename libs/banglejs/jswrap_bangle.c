@@ -3795,7 +3795,7 @@ void jswrap_banglejs_lvgl(int step) {
 		jsiConsolePrintf("A %d", jshGetSystemTime() / jshGetTimeFromMilliseconds(1000));
 		jsiConsolePrintf("B %d", getMilliseconds());	
 	} else if (step == 4) {
-		lv_example_arc_1();	
+		//lv_example_arc_1();	
 		/*
 		// Create a simple LVGL object to test
 		lv_obj_t *label = lv_label_create(lv_scr_act());
