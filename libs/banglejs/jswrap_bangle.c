@@ -81,7 +81,7 @@
 
 #include "lvgl.h"
 
-static uint16_t lvbuf[176 * 176 / 10];
+static uint16_t lvbuf[3104];
 static bool timerHandler1 = false;
 static bool timerHandler2 = false;
 
@@ -3739,6 +3739,36 @@ void my_read_cb(lv_indev_t * indev, lv_indev_data_t*data)
 }
 
 lv_indev_t * indev;
+
+/*
+static void value_changed_event_cb(lv_event_t * e);
+
+void lv_example_arc_1(void)
+{
+    lv_obj_t * label = lv_label_create(lv_screen_active());
+
+    lv_obj_t * arc = lv_arc_create(lv_screen_active());
+    lv_obj_set_size(arc, 150, 150);
+    lv_arc_set_rotation(arc, 135);
+    lv_arc_set_bg_angles(arc, 0, 270);
+    lv_arc_set_value(arc, 10);
+    lv_obj_center(arc);
+    lv_obj_add_event_cb(arc, value_changed_event_cb, LV_EVENT_VALUE_CHANGED, label);
+
+    lv_obj_send_event(arc, LV_EVENT_VALUE_CHANGED, NULL);
+}
+
+static void value_changed_event_cb(lv_event_t * e)
+{
+    lv_obj_t * arc = lv_event_get_target(e);
+    lv_obj_t * label = lv_event_get_user_data(e);
+
+    lv_label_set_text_fmt(label, "%" LV_PRId32 "%%", lv_arc_get_value(arc));
+
+    lv_arc_rotate_obj_to_angle(arc, label, 25);
+}
+*/
+
 
 /*JSON{
     "type" : "staticmethod",
