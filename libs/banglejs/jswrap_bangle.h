@@ -27,6 +27,8 @@ int jswrap_banglejs_isBacklightOn();
 void jswrap_banglejs_setLocked(bool isLocked);
 int jswrap_banglejs_isLocked();
 
+void jswrap_banglejs_lvgl(int step);
+
 void jswrap_banglejs_setPollInterval(JsVarFloat interval);
 void jswrap_banglejs_setOptions(JsVar *options);
 JsVar *jswrap_banglejs_getOptions();

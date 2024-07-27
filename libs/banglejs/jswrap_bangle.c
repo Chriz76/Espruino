@@ -79,6 +79,12 @@
 #include "hrm_vc31.h" // for Bangle.setOptions
 #endif
 
+#include "lvgl.h"
+
+static uint16_t lvbuf[3104];
+static bool timerHandler1 = false;
+static bool timerHandler2 = false;
+
 /*TYPESCRIPT
 declare const BTN1: Pin;
 declare const BTN2: Pin;
@@ -1216,6 +1222,8 @@ void jswrap_banglejs_kickPollWatchdog() {
 /* Scan peripherals for any data that's needed
  * Also, holding down both buttons will reboot */
 void peripheralPollHandler() {
+	if (timerHandler2)
+		lv_timer_handler();	
   JsSysTime time = jshGetSystemTime();
 
 #ifdef BANGLEJS_Q3
@@ -3657,6 +3665,154 @@ NO_INLINE void jswrap_banglejs_setTheme() {
 #endif
 }
 
+static lv_display_t * disp;
+
+void my_flush_cb(lv_display_t * display, const lv_area_t * area, uint8_t * px_map)
+{
+    /*The most simple case (but also the slowest) to put all pixels to the screen one-by-one
+     *`put_px` is just an example, it needs to be implemented by you.*/
+    uint16_t * buf16 = (uint16_t *)px_map; /*Let's say it's a 16 bit (RGB565) display*/
+    int32_t x, y;
+	//uint16_t colOld = 0;
+	jsiConsolePrintf("Started\n");
+
+	if (graphicsInternal.data.modMinX > area->x1)
+	    graphicsInternal.data.modMinX = area->x1;
+	if (graphicsInternal.data.modMinY > area->y1)
+	    graphicsInternal.data.modMinY = area->y1;
+
+    for(y = area->y1; y <= area->y2; y++) {
+        for(x = area->x1; x <= area->x2; x++) {
+			//uint16_t col = *buf16;
+			graphicsInternal.setPixel(&graphicsInternal,(int)x, (int)y, *buf16);
+			//if (col != colOld)
+			//	jsiConsolePrintf("%d %d %d\n", x, y, (int)col);
+            //colOld = col;
+			buf16++;
+        }
+    }
+
+	if (graphicsInternal.data.modMaxX < area->x2)
+	    graphicsInternal.data.modMaxX = area->x2;
+	if (graphicsInternal.data.modMaxY < area->y2)
+	    graphicsInternal.data.modMaxY = area->y2;
+	
+	if(lv_display_flush_is_last(display))
+		graphicsInternalFlip();
+	
+	jsiConsolePrintf("Ended\n");
+
+    /* IMPORTANT!!!
+     * Inform LVGL that you are ready with the flushing and buf is not used anymore*/
+    lv_display_flush_ready(display);
+}
+
+static int64_t substract = 0;
+
+uint32_t getMilliseconds() {
+	if (substract == 0) {
+		substract = jshGetSystemTime();
+		return 0;
+	} else {
+		return jshGetMillisecondsFromTime(jshGetSystemTime() - substract);
+	};
+}
+
+static int labelPos = 0;
+
+void my_log_cb(lv_log_level_t level, const char * buf)
+{
+	jsiConsolePrintf("%s", buf);
+}
+
+void my_read_cb(lv_indev_t * indev, lv_indev_data_t*data)
+{
+	jsiConsolePrintf("%d %d %d", touchX, touchY, touchPts);
+	
+  if(touchPts) {
+    data->point.x = touchX;
+    data->point.y = touchY;
+    data->state = LV_INDEV_STATE_PRESSED;
+  } else {
+    data->state = LV_INDEV_STATE_RELEASED;
+  }
+}
+
+lv_indev_t * indev;
+
+
+static void value_changed_event_cb(lv_event_t * e);
+
+
+void lv_example_arc_1(void)
+{
+    lv_obj_t * label = lv_label_create(lv_scr_act());
+
+    lv_obj_t * arc = lv_arc_create(lv_scr_act());
+    lv_obj_set_size(arc, 150, 150);
+    lv_arc_set_rotation(arc, 135);
+    lv_arc_set_bg_angles(arc, 0, 270);
+    lv_arc_set_value(arc, 10);
+    lv_obj_center(arc);
+    lv_obj_add_event_cb(arc, value_changed_event_cb, LV_EVENT_VALUE_CHANGED, label);
+
+    lv_obj_send_event(arc, LV_EVENT_VALUE_CHANGED, NULL);
+}
+
+static void value_changed_event_cb(lv_event_t * e)
+{
+    lv_obj_t * arc = lv_event_get_target(e);
+    lv_obj_t * label = lv_event_get_user_data(e);
+
+    lv_label_set_text_fmt(label, "%" LV_PRId32 "%%", lv_arc_get_value(arc));
+
+    lv_arc_rotate_obj_to_angle(arc, label, 25);
+}
+
+
+
+/*JSON{
+    "type" : "staticmethod",
+    "class" : "Bangle",
+    "name" : "lvgl",
+    "generate" : "jswrap_banglejs_lvgl",
+    "params" : [["step","int",""]],
+    "ifdef" : "BANGLEJS"
+}
+XXX
+*/
+void jswrap_banglejs_lvgl(int step) { 
+	if (step == 0) {
+		disp = lv_display_create(176, 176);
+		lv_log_register_print_cb(my_log_cb);
+		indev = lv_indev_create();
+		lv_indev_set_type(indev, LV_INDEV_TYPE_POINTER);  	
+	} else if (step == 1) {
+		lv_display_set_flush_cb(disp, my_flush_cb);
+		lv_indev_set_read_cb(indev, my_read_cb);
+	} else if (step == 2)
+		lv_display_set_buffers(disp, lvbuf, NULL, sizeof(lvbuf), LV_DISPLAY_RENDER_MODE_PARTIAL);
+	else if (step == 3)
+		lv_tick_set_cb(getMilliseconds);  
+	else if (step == 4) {
+		jsiConsolePrintf("A %d", jshGetSystemTime() / jshGetTimeFromMilliseconds(1000));
+		jsiConsolePrintf("B %d", getMilliseconds());
+		// Create a simple LVGL object to test
+		lv_obj_t *label = lv_label_create(lv_scr_act());
+		lv_label_set_text(label, "Hello");
+		lv_obj_align(label, LV_ALIGN_CENTER, labelPos, labelPos);	
+		labelPos += 10;
+	} else if (step == 5)
+		timerHandler1 = true;
+	else if (step == 6)
+		lv_example_arc_1();
+	//timerHandler2 = true;	
+	else 
+		jsiConsolePrintf("Unknown lvgl option\n");
+		
+}
+
+
 /*JSON{
   "type" : "hwinit",
   "generate" : "jswrap_banglejs_hwinit"
@@ -3790,6 +3946,9 @@ NO_INLINE void jswrap_banglejs_hwinit() {
   // set default graphics themes - before we even start to load settings.json
   jswrap_banglejs_setTheme();
   graphicsFillRect(&graphicsInternal, 0,0,LCD_WIDTH-1,LCD_HEIGHT-1,graphicsTheme.bg);
+  
+  
+  lv_init();
 }
 
 /*JSON{
@@ -4344,6 +4503,8 @@ void jswrap_banglejs_kill() {
   "generate" : "jswrap_banglejs_idle"
 }*/
 bool jswrap_banglejs_idle() {
+	if (timerHandler1)
+		lv_timer_handler();
   JsVar *bangle =jsvObjectGetChildIfExists(execInfo.root, "Bangle");
   /* Check if we have an accelerometer listener, and set JSBF_ACCEL_LISTENER
    * accordingly - so we don't get a wakeup if we have no listener. */
