@@ -3793,11 +3793,11 @@ void jswrap_banglejs_lvgl(int step) {
 		lv_display_set_buffers(disp, lvbuf, NULL, sizeof(lvbuf), LV_DISPLAY_RENDER_MODE_PARTIAL);
 	else if (step == 3)
 		lv_tick_set_cb(getMilliseconds);  
+		jsiConsolePrintf("A %d", jshGetSystemTime() / jshGetTimeFromMilliseconds(1000));
+		jsiConsolePrintf("B %d", getMilliseconds());	
 	else if (step == 4) {
 		lv_example_arc_1();	
 		/*
-		jsiConsolePrintf("A %d", jshGetSystemTime() / jshGetTimeFromMilliseconds(1000));
-		jsiConsolePrintf("B %d", getMilliseconds());
 		// Create a simple LVGL object to test
 		lv_obj_t *label = lv_label_create(lv_scr_act());
 		lv_label_set_text(label, "Hello");
