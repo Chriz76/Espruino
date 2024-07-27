@@ -3743,6 +3743,7 @@ lv_indev_t * indev;
 
 static void value_changed_event_cb(lv_event_t * e);
 
+/*
 void lv_example_arc_1(void)
 {
     lv_obj_t * label = lv_label_create(lv_screen_active());
@@ -3767,6 +3768,7 @@ static void value_changed_event_cb(lv_event_t * e)
 
     lv_arc_rotate_obj_to_angle(arc, label, 25);
 }
+*/
 
 
 /*JSON{
@@ -3795,14 +3797,12 @@ void jswrap_banglejs_lvgl(int step) {
 	else if (step == 4) {
 		jsiConsolePrintf("A %d", jshGetSystemTime() / jshGetTimeFromMilliseconds(1000));
 		jsiConsolePrintf("B %d", getMilliseconds());
-		lv_example_arc_1();
-		/*
+		//lv_example_arc_1();
 		// Create a simple LVGL object to test
 		lv_obj_t *label = lv_label_create(lv_scr_act());
 		lv_label_set_text(label, "Hello");
 		lv_obj_align(label, LV_ALIGN_CENTER, labelPos, labelPos);	
 		labelPos += 10;
-		*/
 	} else if (step == 5)
 		timerHandler1 = true;
 	else if (step == 6)
